@@ -4,7 +4,7 @@ import DownSolid from "../assets/down-solid.svg"
 
 export default function Toolbar() {
     return (
-        <div className="flex w-[1150px] mt-4 items-center ">
+        <div className="flex w-[1150px] mt-2 items-center ">
             <div className="flex bg-white items-center p-2 shadow-sm rounded-lg w-[500px] border-2 ">
                 <img src={SearchSolid} className="h-[20px] mr-4 ml-2" />
                 <input type="text" placeholder="Search" className="bg-transperant appearance-none outline-none" />
