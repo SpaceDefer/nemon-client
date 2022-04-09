@@ -1,8 +1,8 @@
 import Toolbar from "../components/toolbar";
 import { useState } from 'react'
 import { makeStyles } from "@mui/styles";
-import {Button} from '@mui/material'
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid'
+import { Button } from '@mui/material'
+import { DataGrid, GridColDef, GridValueGetterParams, GridRowParams } from '@mui/x-data-grid'
 import SearchSolid from "../assets/search-solid.svg"
 
 type App = {
@@ -13,16 +13,36 @@ type App = {
     version: string;
     type: string;
 }
+const apps = [
+    {
+        id: "1",
+        name: "windows 11",
+        installationDate: 1649521342,
+        priority: "high",
+        version: "11.11.1",
+        type: "office"
+    }
+]
+
+function convertToDateAndTime(ts:number) {
+    var date = new Date(ts);
+
+    return (date.getDate() +
+        "/" + (date.getMonth() + 1) +
+        "/" + date.getFullYear() +
+        " " + date.getHours() +
+        ":" + date.getMinutes());
+}
 
 const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', width: 400 },
     {
-        field: 'installationDate', headerName: 'Instalation Date', width: 250,
+        field: 'installationDate', headerName: 'Installation Date', width: 300,
         valueGetter: (params: GridValueGetterParams) =>
-            `${params.row.firstName || ''} ${params.row.lastName || ''}`,
+            `${convertToDateAndTime(params.row.installationDate)}`,
     },
     { field: 'priority', headerName: 'Priority', width: 200 },
-    { field: 'version', headerName: 'Version', width: 200 , sortable: false},
+    { field: 'version', headerName: 'Version', width: 200, sortable: false },
 ];
 
 const useStyles = makeStyles({
@@ -32,8 +52,12 @@ const useStyles = makeStyles({
 })
 
 export default function Applications() {
-    const [apps, setApps] = useState<App[]>();
+    //const [apps, setApps] = useState<App[]>();
     const styles = useStyles()
+    const handleRowClick = (inp: GridRowParams<any>) => {
+        console.log(inp.row);
+
+    }
     return (
         <div className="p-6 h-screen">
             <p className="font-bold text-2xl">Applications</p>
@@ -48,8 +72,6 @@ export default function Applications() {
                     <input type="text" placeholder="Search" className="bg-transperant appearance-none outline-none" />
                 </div>
                 <div className="flex-grow" />
-                <Button>Update</Button>
-                <Button color="error">Uninstall</Button>
             </div>
             <DataGrid
                 style={{ height: 400, width: '100%', backgroundColor: "white", marginTop: 10 }}
@@ -57,7 +79,7 @@ export default function Applications() {
                 columns={columns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
-                checkboxSelection
+                onRowClick={handleRowClick}
             />
         </div>
     )
