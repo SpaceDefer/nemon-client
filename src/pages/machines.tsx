@@ -32,10 +32,13 @@ const style = {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: 1400,
+    width: 900,
     bgcolor: "background.paper",
     border: "2px solid #000",
     p: 4,
+    overflowY: "auto",
+    maxHeight: "90vh",
+    overflowX: "initial"
 };
 
 interface App {
@@ -169,16 +172,17 @@ export default function Machines() {
                 BackdropProps={{
                     timeout: 500,
                 }}
+                style={{"overflowX" : "auto"}}
             >
                 <TableContainer component={Paper} style={style}>
-                    <Table sx={{ minWidth: 1150 }} aria-label="Machines">
+                    <Table sx={{ minWidth: 750 }} aria-label="Machines">
                         <TableHead>
                             <TableRow>
                                 <TableCell>Name</TableCell>
                                 <TableCell align="right">Actions</TableCell>
                             </TableRow>
                         </TableHead>
-                        <TableBody>
+                        <TableBody className="overflow-scroll">
                             {appList &&
                                 appList.map((app) => (
                                     <TableRow
@@ -194,7 +198,7 @@ export default function Machines() {
                                             {app.applicationName}
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Button>Update</Button>
+                                            <Button>Add to blocked</Button>
                                             <Button color="error">
                                                 Remove
                                             </Button>
