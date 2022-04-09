@@ -1,22 +1,25 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Sidebar from './components/sidebar'
-import Applications from './pages/applications'
-import Machines from './pages/machines'
+import { useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Sidebar from "./components/sidebar";
+import Applications from "./pages/applications";
+import Machines from "./pages/machines";
 
-function App() {
+const App = () => {
+  const client = new WebSocket("ws://127.0.0.1:4000");
+
+  useEffect(() => {
+
+  }, []);
   return (
-    <div className='flex'>
+    <div className="flex w-full">
       <Sidebar />
       <Routes>
         <Route path="/machines" element={<Machines />} />
         <Route path="/applications" element={<Applications />} />
-        <Route
-          path="/"
-          element={<Navigate to="/applications" replace />}
-        />
+        <Route path="/" element={<Navigate to="/applications" replace />} />
       </Routes>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
