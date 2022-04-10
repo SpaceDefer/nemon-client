@@ -7,11 +7,8 @@ import Machines from "./pages/machines";
 const App = () => {
   const client = new WebSocket("ws://127.0.0.1:4000");
 
-  useEffect(() => {
-
-  }, []);
   return (
-    <div className="flex w-full">
+    <div className="flex w-screen overflow-hidden">
       <Sidebar />
       <Routes>
         <Route path="/machines" element={<Machines />} />

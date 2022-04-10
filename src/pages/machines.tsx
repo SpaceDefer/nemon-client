@@ -5,12 +5,15 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Snackbar from "@mui/material/Snackbar";
 import Paper from "@mui/material/Paper";
+import Alert from "@mui/material/Alert";
 import { useCallback, useEffect, useState } from "react";
 import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
 import { useSocket } from "../hooks/useSocket";
+import { Box } from "@mui/material";
 
 function convertToDateAndTime(ts: number) {
     var date = new Date(ts * 1000);
@@ -38,7 +41,7 @@ const style = {
     p: 4,
     overflowY: "auto",
     maxHeight: "90vh",
-    overflowX: "initial"
+    overflowX: "initial",
 };
 
 interface App {
@@ -58,6 +61,10 @@ interface MachineApplicationsMap {
     [key: string]: App[];
 }
 
+interface IpToMachineMap {
+    [key: string]: Machine;
+}
+
 const machines = [
     {
         id: "1",
@@ -67,30 +74,53 @@ const machines = [
     },
 ];
 
-export default function Machines() {
+const Machines = () => {
     const [apps, setApps] = useState<MachineApplicationsMap>({});
     const [appList, setAppList] = useState<App[]>([]);
-    const [machines, setMachines] = useState<Machine[]>([]);
+    const [machines, setMachines] = useState<Map<string, Machine>>(
+        new Map<string, Machine>()
+    );
+    const [alert, setAlert] = useState<string>();
+    const [ips, setIps] = useState<Set<string>>(new Set<string>());
     const [appListOpen, setAppListOpen] = useState(false);
+    const [open, setOpen] = useState<boolean>(false);
     const socket = useSocket();
 
     const onMessage = useCallback((message) => {
         const data = JSON.parse(message?.data);
-        console.log(data.ip, data.applicationList);
+        console.log(data);
 
-        const temp = apps;
-        temp[data.workerIp] = data.applicationList;
-        console.log(temp);
-        setApps(temp);
+        switch (data.type) {
+            case "INF":
+                const temp = apps;
+                temp[data.workerIp] = data.applicationList;
+                console.log(temp);
+                setApps(temp);
 
-        var newMachine: Machine = {
-            ip: data.workerIp,
-            username: data.username,
-            hostname: data.hostname,
-            os: data.os,
-            status: "online",
-        };
-        setMachines([...machines, newMachine]);
+                var newMachine: Machine = {
+                    ip: data.workerIp,
+                    username: data.username,
+                    hostname: data.hostname,
+                    os: data.os,
+                    status: "online",
+                };
+                const t = ips;
+                if (t.has(data.workerIp)) {
+                    return;
+                }
+                const mt = machines;
+                mt.set(data.workerIp, newMachine);
+                t.add(data.workerIp);
+                setIps(t);
+                setMachines(mt);
+                console.log(t);
+                break;
+            case "ALT":
+                console.log(data.message);
+                setAlert(data.message);
+                setOpen(true);
+                setTimeout(() => setOpen(false), 3000);
+        }
     }, []);
 
     useEffect(() => {
@@ -120,48 +150,84 @@ export default function Machines() {
                 </div>
                 <div className="flex-grow" />
             </div>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 1150 }} aria-label="Machines">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell align="right">IP Address</TableCell>
-                            <TableCell align="right">Status</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {machines?.map((machine) => (
-                            <TableRow
-                                key={machine.ip}
-                                sx={{
-                                    "&:last-child td, &:last-child th": {
-                                        border: 0,
-                                    },
-                                }}
-                                onClick={(e) => handleRowClick(machine.ip)}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {machine.username}
-                                </TableCell>
+            {alert && (
+                <Snackbar open={open} autoHideDuration={5000}>
+                    <Alert severity="error">{alert}</Alert>
+                </Snackbar>
+            )}
+            {ips.size > 0 ? (
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 1150 }} aria-label="Machines">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Name</TableCell>
+                                <TableCell align="right">IP Address</TableCell>
                                 <TableCell align="right">
-                                    {machine.ip}
+                                    Operating System
                                 </TableCell>
-                                <TableCell
-                                    align="right"
-                                    style={{
-                                        color:
-                                            machine.status === "online"
-                                                ? "#03C04A"
-                                                : "#E3242B",
-                                    }}
-                                >
-                                    {machine.status}
-                                </TableCell>
+                                <TableCell align="right">Status</TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {[...machines.keys()].map((ip: string) => {
+                                let machine = machines.get(ip);
+                                console.log("this machine,", machine);
+                                return (
+                                    machine && (
+                                        <TableRow
+                                            key={machine.ip}
+                                            sx={{
+                                                "&:last-child td, &:last-child th":
+                                                    {
+                                                        border: 0,
+                                                    },
+                                            }}
+                                            onClick={(e) =>
+                                                handleRowClick(machine.ip)
+                                            }
+                                        >
+                                            <TableCell
+                                                component="th"
+                                                scope="row"
+                                            >
+                                                {machine.username}
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                {machine.ip}
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                {machine.os}
+                                            </TableCell>
+                                            <TableCell
+                                                align="right"
+                                                style={{
+                                                    color:
+                                                        machine.status ===
+                                                        "online"
+                                                            ? "#03C04A"
+                                                            : "#E3242B",
+                                                }}
+                                            >
+                                                {machine.status}
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            ) : (
+                <Box
+                    style={{
+                        marginTop: "10vh",
+                        marginLeft: "10vw",
+                        fontSize: "3vh",
+                    }}
+                >
+                    loading...
+                </Box>
+            )}
             <Modal
                 aria-labelledby="transition-modal-title"
                 aria-describedby="transition-modal-description"
@@ -172,7 +238,7 @@ export default function Machines() {
                 BackdropProps={{
                     timeout: 500,
                 }}
-                style={{"overflowX" : "auto"}}
+                style={{ overflowX: "auto" }}
             >
                 <TableContainer component={Paper} style={style}>
                     <Table sx={{ minWidth: 750 }} aria-label="Machines">
@@ -211,4 +277,6 @@ export default function Machines() {
             </Modal>
         </div>
     );
-}
+};
+
+export default Machines;
