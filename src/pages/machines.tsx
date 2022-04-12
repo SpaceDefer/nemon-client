@@ -13,7 +13,7 @@ import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
 import { useSocket } from "../hooks/useSocket";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 function convertToDateAndTime(ts: number) {
     var date = new Date(ts * 1000);
@@ -80,11 +80,17 @@ const Machines = () => {
     const [machines, setMachines] = useState<Map<string, Machine>>(
         new Map<string, Machine>()
     );
+    const [flip, toggleFlip] = useState<boolean>(false);
+    const [size, setSize] = useState<number>(0);
     const [alert, setAlert] = useState<string>();
     const [ips, setIps] = useState<Set<string>>(new Set<string>());
     const [appListOpen, setAppListOpen] = useState(false);
     const [open, setOpen] = useState<boolean>(false);
     const socket = useSocket();
+
+    useEffect(() => {
+        setSize(ips.size);
+    }, [flip]);
 
     const onMessage = useCallback((message) => {
         const data = JSON.parse(message?.data);
@@ -105,21 +111,23 @@ const Machines = () => {
                     status: "online",
                 };
                 const t = ips;
-                if (t.has(data.workerIp)) {
-                    return;
-                }
                 const mt = machines;
-                mt.set(data.workerIp, newMachine);
-                t.add(data.workerIp);
-                setIps(t);
-                setMachines(mt);
+                if (t.has(data.workerIp)) {
+                    mt.set(data.workerIp, newMachine);
+                } else {
+                    mt.set(data.workerIp, newMachine);
+                    t.add(data.workerIp);
+                    setIps(t);
+                    setMachines(mt);
+                }
+                toggleFlip(!flip);
                 console.log(t);
                 break;
             case "ALT":
                 console.log(data.message);
                 setAlert(data.message);
                 setOpen(true);
-                setTimeout(() => setOpen(false), 3000);
+                setTimeout(() => setOpen(false), 5000);
         }
     }, []);
 
@@ -139,7 +147,7 @@ const Machines = () => {
     return (
         <div className="p-12">
             <p className="font-bold text-2xl">Network Computers</p>
-            <div className="flex w-[1150px] mt-2 items-center mb-2">
+            <div className="flex w-full mt-2 items-center mb-2">
                 <div className="flex bg-white items-center p-2 shadow-sm rounded-lg w-[500px] border-2 ">
                     <img src={SearchSolid} className="h-[20px] mr-4 ml-2" />
                     <input
@@ -151,13 +159,13 @@ const Machines = () => {
                 <div className="flex-grow" />
             </div>
             {alert && (
-                <Snackbar open={open} autoHideDuration={5000}>
+                <Snackbar open={open} autoHideDuration={6000}>
                     <Alert severity="error">{alert}</Alert>
                 </Snackbar>
             )}
-            {ips.size > 0 ? (
+            {size ? (
                 <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 1150 }} aria-label="Machines">
+                    <Table style={{ minWidth: "70vw" }} aria-label="Machines">
                         <TableHead>
                             <TableRow>
                                 <TableCell>Name</TableCell>
@@ -171,7 +179,6 @@ const Machines = () => {
                         <TableBody>
                             {[...machines.keys()].map((ip: string) => {
                                 let machine = machines.get(ip);
-                                console.log("this machine,", machine);
                                 return (
                                     machine && (
                                         <TableRow
@@ -218,14 +225,21 @@ const Machines = () => {
                     </Table>
                 </TableContainer>
             ) : (
-                <Box
-                    style={{
-                        marginTop: "10vh",
-                        marginLeft: "10vw",
-                        fontSize: "3vh",
-                    }}
-                >
-                    loading...
+                <Box style={{ width: "full", height: "full" }}>
+                    <Box
+                        style={{
+                            position: "absolute",
+                            width: "0px",
+                            left: 0,
+                            right: 0,
+                            marginLeft: "auto",
+                            marginTop: "auto",
+                            marginBottom: "auto",
+                            marginRight: "auto",
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
                 </Box>
             )}
             <Modal
