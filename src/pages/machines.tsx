@@ -67,7 +67,7 @@ interface Machine {
     username: string;
     hostname: string;
     os: string;
-    status: string;
+    status: "offline" | "online";
 }
 
 interface MachineApplicationsMap {
@@ -84,7 +84,9 @@ interface AlertConfig {
 }
 
 const Machines = () => {
-    const [apps, setApps] = useState<MachineApplicationsMap>({});
+    const [apps, setApps] = useState<Map<string, Application[]>>(
+        new Map<string, Application[]>()
+    );
     const [appList, setAppList] = useState<Application[]>([]);
     const [machines, setMachines] = useState<Map<string, Machine>>(
         new Map<string, Machine>()
@@ -112,9 +114,12 @@ const Machines = () => {
         switch (data.type) {
             case "INF":
                 const temp = apps;
-                temp[data.workerIp] = data.applicationList;
                 console.log(temp);
-                setApps(temp);
+                setApps(
+                    new Map<string, Application[]>(
+                        apps.set(data.workerIp, data.applicationList)
+                    )
+                );
 
                 var newMachine: Machine = {
                     ip: data.workerIp,
@@ -123,29 +128,36 @@ const Machines = () => {
                     os: data.os,
                     status: "online",
                 };
-                const t = ips;
-                const mt = machines;
-                if (t.has(data.workerIp)) {
-                    mt.set(data.workerIp, newMachine);
-                } else {
-                    mt.set(data.workerIp, newMachine);
-                    t.add(data.workerIp);
-                    setIps(t);
-                    setMachines(mt);
+                if (!ips.has(data.workerIp)) {
+                    setIps(new Set<string>(ips.add(data.workerIp)));
                 }
+                setMachines(
+                    new Map<string, Machine>(
+                        machines.set(data.workerIp, newMachine)
+                    )
+                );
                 toggleFlip(!flip);
-                console.log(t);
                 break;
             case "ALT":
                 console.log(data.message);
                 setAlertConfig({ message: data.message, severity: "error" });
                 setOpen(true);
+                var offlineMachine = machines.get(data.workerIp);
+                console.log(offlineMachine);
+                offlineMachine.status = "offline";
+                setMachines(
+                    new Map<string, Machine>(
+                        machines.set(data.workerIp, offlineMachine)
+                    )
+                );
                 setTimeout(() => setOpen(false), 5000);
+                break;
             case "ACK":
                 console.log(data.message);
                 setAlertConfig({ message: data.message, severity: "success" });
                 setOpen(true);
                 setTimeout(() => setOpen(false), 5000);
+                break;
         }
     }, []);
 
@@ -158,9 +170,9 @@ const Machines = () => {
     });
 
     const handleRowClick = (id: string) => {
-        setAppList(apps[id]);
+        console.log(apps);
+        setAppList(apps?.get(id));
         setWorkerIp(id);
-        console.log(apps[id]);
         setAppListOpen(true);
     };
     return (
@@ -179,7 +191,7 @@ const Machines = () => {
             </div>
             {alertConfig && (
                 <Snackbar open={open} autoHideDuration={6000}>
-                    <Alert severity={alertConfig.severity}>
+                    <Alert severity={alertConfig.severity || "warning"}>
                         {alertConfig.message}
                     </Alert>
                 </Snackbar>
