@@ -7,7 +7,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Snackbar from "@mui/material/Snackbar";
 import Paper from "@mui/material/Paper";
-import Alert from "@mui/material/Alert";
+import Alert, { AlertColor } from "@mui/material/Alert";
 import { useCallback, useEffect, useState } from "react";
 import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
@@ -44,7 +44,7 @@ const style = {
     overflowX: "initial",
 };
 
-interface App {
+interface Application {
     applicationName: string;
     location: string;
 }
@@ -58,31 +58,30 @@ interface Machine {
 }
 
 interface MachineApplicationsMap {
-    [key: string]: App[];
+    [key: string]: Application[];
 }
 
 interface IpToMachineMap {
     [key: string]: Machine;
 }
 
-const machines = [
-    {
-        id: "1",
-        name: "machine 1",
-        ipAddress: "192.168.20.89",
-        status: "offline",
-    },
-];
+interface AlertConfig {
+    severity: AlertColor;
+    message: string;
+}
 
 const Machines = () => {
     const [apps, setApps] = useState<MachineApplicationsMap>({});
-    const [appList, setAppList] = useState<App[]>([]);
+    const [appList, setAppList] = useState<Application[]>([]);
     const [machines, setMachines] = useState<Map<string, Machine>>(
         new Map<string, Machine>()
     );
     const [flip, toggleFlip] = useState<boolean>(false);
     const [size, setSize] = useState<number>(0);
-    const [alert, setAlert] = useState<string>();
+    const [alertConfig, setAlertConfig] = useState<AlertConfig>({
+        message: "",
+        severity: "error",
+    });
     const [ips, setIps] = useState<Set<string>>(new Set<string>());
     const [appListOpen, setAppListOpen] = useState(false);
     const [open, setOpen] = useState<boolean>(false);
@@ -125,7 +124,12 @@ const Machines = () => {
                 break;
             case "ALT":
                 console.log(data.message);
-                setAlert(data.message);
+                setAlertConfig({ message: data.message, severity: "error" });
+                setOpen(true);
+                setTimeout(() => setOpen(false), 5000);
+            case "ACK":
+                console.log(data.message);
+                setAlertConfig({ message: data.message, severity: "success" });
                 setOpen(true);
                 setTimeout(() => setOpen(false), 5000);
         }
@@ -158,9 +162,11 @@ const Machines = () => {
                 </div>
                 <div className="flex-grow" />
             </div>
-            {alert && (
+            {alertConfig && (
                 <Snackbar open={open} autoHideDuration={6000}>
-                    <Alert severity="error">{alert}</Alert>
+                    <Alert severity={alertConfig.severity}>
+                        {alertConfig.message}
+                    </Alert>
                 </Snackbar>
             )}
             {size ? (
@@ -264,7 +270,7 @@ const Machines = () => {
                         </TableHead>
                         <TableBody className="overflow-scroll">
                             {appList &&
-                                appList.map((app) => (
+                                appList.map((app: Application) => (
                                     <TableRow
                                         key={app.applicationName}
                                         sx={{
@@ -279,7 +285,26 @@ const Machines = () => {
                                         </TableCell>
                                         <TableCell align="right">
                                             <Button>Add to blocked</Button>
-                                            <Button color="error">
+                                            <Button
+                                                onClick={() => {
+                                                    console.log(
+                                                        app.applicationName
+                                                    );
+                                                    let deleteReq = {
+                                                        Type: "DEL",
+                                                        ApplicationName:
+                                                            app.applicationName,
+                                                        WorkerIp: "localhost",
+                                                        Location: app.location,
+                                                    };
+                                                    socket.send(
+                                                        JSON.stringify(
+                                                            deleteReq
+                                                        )
+                                                    );
+                                                }}
+                                                color="error"
+                                            >
                                                 Remove
                                             </Button>
                                         </TableCell>
