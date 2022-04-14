@@ -6,12 +6,12 @@ import { BrowserRouter } from "react-router-dom";
 import { SocketProvider } from "./hooks/SocketProvider";
 
 ReactDOM.render(
-  <SocketProvider>
-    <React.StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </React.StrictMode>
-  </SocketProvider>,
-  document.getElementById("root")
+    <SocketProvider>
+        <React.StrictMode>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
+        </React.StrictMode>
+    </SocketProvider>,
+    document.getElementById("root")
 );
