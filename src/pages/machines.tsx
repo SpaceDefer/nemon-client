@@ -43,6 +43,19 @@ const style = {
     maxHeight: "90vh",
     overflowX: "initial",
 };
+type Alert = "ALT";
+type Acknowledge = "ACK";
+type Info = "INF";
+type Delete = "DEL";
+
+type Type = Alert | Acknowledge | Info | Delete;
+
+interface DeleteRequest {
+    Type: Type;
+    ApplicationName: string;
+    WorkerIp: string;
+    Location: string;
+}
 
 interface Application {
     applicationName: string;
@@ -85,6 +98,7 @@ const Machines = () => {
     const [ips, setIps] = useState<Set<string>>(new Set<string>());
     const [appListOpen, setAppListOpen] = useState(false);
     const [open, setOpen] = useState<boolean>(false);
+    const [workerIp, setWorkerIp] = useState<string>("");
     const socket = useSocket();
 
     useEffect(() => {
@@ -145,6 +159,7 @@ const Machines = () => {
 
     const handleRowClick = (id: string) => {
         setAppList(apps[id]);
+        setWorkerIp(id);
         console.log(apps[id]);
         setAppListOpen(true);
     };
@@ -290,13 +305,15 @@ const Machines = () => {
                                                     console.log(
                                                         app.applicationName
                                                     );
-                                                    let deleteReq = {
-                                                        Type: "DEL",
-                                                        ApplicationName:
-                                                            app.applicationName,
-                                                        WorkerIp: "localhost",
-                                                        Location: app.location,
-                                                    };
+                                                    let deleteReq: DeleteRequest =
+                                                        {
+                                                            Type: "DEL",
+                                                            ApplicationName:
+                                                                app.applicationName,
+                                                            WorkerIp: workerIp,
+                                                            Location:
+                                                                app.location,
+                                                        };
                                                     socket.send(
                                                         JSON.stringify(
                                                             deleteReq
