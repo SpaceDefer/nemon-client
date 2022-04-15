@@ -210,50 +210,52 @@ const Machines = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {[...machines.keys()].map((ip: string) => {
-                                let machine = machines.get(ip);
-                                return (
-                                    machine && (
-                                        <TableRow
-                                            key={machine.ip}
-                                            sx={{
-                                                "&:last-child td, &:last-child th":
-                                                    {
-                                                        border: 0,
-                                                    },
-                                            }}
-                                            onClick={(e) =>
-                                                handleRowClick(machine.ip)
-                                            }
-                                        >
-                                            <TableCell
-                                                component="th"
-                                                scope="row"
-                                            >
-                                                {machine.username}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {machine.ip}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {machine.os}
-                                            </TableCell>
-                                            <TableCell
-                                                align="right"
-                                                style={{
-                                                    color:
-                                                        machine.status ===
-                                                        "online"
-                                                            ? "#03C04A"
-                                                            : "#E3242B",
+                            {[...machines.keys()].map(
+                                (ip: string, id: number) => {
+                                    let machine = machines.get(ip);
+                                    return (
+                                        machine && (
+                                            <TableRow
+                                                key={id}
+                                                sx={{
+                                                    "&:last-child td, &:last-child th":
+                                                        {
+                                                            border: 0,
+                                                        },
                                                 }}
+                                                onClick={(e) =>
+                                                    handleRowClick(machine.ip)
+                                                }
                                             >
-                                                {machine.status}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                );
-                            })}
+                                                <TableCell
+                                                    component="th"
+                                                    scope="row"
+                                                >
+                                                    {machine.username}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    {machine.ip}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    {machine.os}
+                                                </TableCell>
+                                                <TableCell
+                                                    align="right"
+                                                    style={{
+                                                        color:
+                                                            machine.status ===
+                                                            "online"
+                                                                ? "#03C04A"
+                                                                : "#E3242B",
+                                                    }}
+                                                >
+                                                    {machine.status}
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    );
+                                }
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -297,9 +299,9 @@ const Machines = () => {
                         </TableHead>
                         <TableBody className="overflow-scroll">
                             {appList &&
-                                appList.map((app: Application) => (
+                                appList.map((app: Application, id: number) => (
                                     <TableRow
-                                        key={app.applicationName}
+                                        key={id}
                                         sx={{
                                             "&:last-child td, &:last-child th":
                                                 {
