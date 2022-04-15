@@ -49,6 +49,7 @@ type Info = "INF";
 type Delete = "DEL";
 
 type Type = Alert | Acknowledge | Info | Delete;
+type Status = "offline" | "online" | "reconnecting";
 
 interface DeleteRequest {
     Type: Type;
@@ -67,7 +68,7 @@ interface Machine {
     username: string;
     hostname: string;
     os: string;
-    status: "offline" | "online";
+    status: Status;
 }
 
 interface MachineApplicationsMap {
@@ -139,12 +140,32 @@ const Machines = () => {
                 toggleFlip(!flip);
                 break;
             case "ALT":
-                console.log(data.message);
+                console.log(data);
                 setAlertConfig({ message: data.message, severity: "error" });
+                switch (data.status) {
+                    case "online":
+                        setAlertConfig({
+                            message: `${data.workerIp} is online!`,
+                            severity: "success",
+                        });
+                        break;
+                    case "offline":
+                        setAlertConfig({
+                            message: `${data.workerIp} is offline!`,
+                            severity: "error",
+                        });
+                        break;
+                    case "reconnecting":
+                        setAlertConfig({
+                            message: `trying to reconnect to ${data.workerIp}!`,
+                            severity: "warning",
+                        });
+                        break;
+                }
                 setOpen(true);
                 var offlineMachine = machines.get(data.workerIp);
                 console.log(offlineMachine);
-                offlineMachine.status = "offline";
+                offlineMachine.status = data.status;
                 setMachines(
                     new Map<string, Machine>(
                         machines.set(data.workerIp, offlineMachine)
@@ -240,13 +261,16 @@ const Machines = () => {
                                                     {machine.os}
                                                 </TableCell>
                                                 <TableCell
+                                                    // TODO: yellow color :(
                                                     align="right"
                                                     style={{
                                                         color:
                                                             machine.status ===
                                                             "online"
                                                                 ? "#03C04A"
-                                                                : "#E3242B",
+                                                                : "offline"
+                                                                ? "#E3242B"
+                                                                : "#FFFF00",
                                                     }}
                                                 >
                                                     {machine.status}
