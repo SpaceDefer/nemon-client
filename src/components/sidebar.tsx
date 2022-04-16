@@ -5,11 +5,18 @@ import GearSolid from "../assets/gear-solid.svg";
 import ExitSOlid from "../assets/exit-solid.svg";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { internalIpV4 } from "internal-ip";
 
 export default function Sidebar() {
     const location = useLocation();
+    const [ip, setIp] = useState<string>("");
     const [currLocation, setCurrLocation] = useState("");
     useEffect(() => {
+        const setip = async () => {
+            var i = await internalIpV4();
+            setIp(i ? i : "connect to a LAN");
+        };
+        setip();
         setCurrLocation(location.pathname.split("/")[1]);
     }, [location]);
     return (
@@ -52,7 +59,7 @@ export default function Sidebar() {
                         <p className="text-slate-50 font-semibold text-sm">
                             Admin
                         </p>
-                        <p className="text-slate-50 text-xs">192.168.0.1</p>
+                        <p className="text-slate-50 text-xs">{ip}</p>
                     </div>
                 </div>
                 <div className="flex mb-2">

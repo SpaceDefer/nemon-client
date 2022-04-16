@@ -13,7 +13,7 @@ import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
 import { useSocket } from "../hooks/useSocket";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, Chip, CircularProgress } from "@mui/material";
 
 function convertToDateAndTime(ts: number) {
     var date = new Date(ts * 1000);
@@ -43,6 +43,7 @@ const style = {
     maxHeight: "90vh",
     overflowX: "initial",
 };
+
 type Alert = "ALT";
 type Acknowledge = "ACK";
 type Info = "INF";
@@ -263,17 +264,20 @@ const Machines = () => {
                                                 <TableCell
                                                     // TODO: yellow color :(
                                                     align="right"
-                                                    style={{
-                                                        color:
+                                                >
+                                                    <Chip
+                                                        label={machine.status}
+                                                        variant="outlined"
+                                                        color={
                                                             machine.status ===
                                                             "online"
-                                                                ? "#03C04A"
-                                                                : "offline"
-                                                                ? "#E3242B"
-                                                                : "#FFFF00",
-                                                    }}
-                                                >
-                                                    {machine.status}
+                                                                ? "success"
+                                                                : machine.status ===
+                                                                  "offline"
+                                                                ? "error"
+                                                                : "info"
+                                                        }
+                                                    />
                                                 </TableCell>
                                             </TableRow>
                                         )
@@ -314,7 +318,11 @@ const Machines = () => {
                 style={{ overflowX: "auto" }}
             >
                 <TableContainer component={Paper} style={style}>
-                    <Table sx={{ minWidth: 750 }} aria-label="Machines">
+                    <Table
+                        stickyHeader
+                        sx={{ minWidth: 750 }}
+                        aria-label="Machines"
+                    >
                         <TableHead>
                             <TableRow>
                                 <TableCell>Name</TableCell>
