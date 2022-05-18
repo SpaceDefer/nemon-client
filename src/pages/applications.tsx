@@ -65,7 +65,7 @@ const useStyles = makeStyles({
 });
 
 const Applications = () => {
-    //const [apps, setApps] = useState<App[]>();
+    const [apps, setApps] = useState<App[]>();
     const styles = useStyles();
     const handleRowClick = (inp: GridRowParams<any>) => {
         console.log(inp.row);

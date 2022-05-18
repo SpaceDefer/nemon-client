@@ -13,7 +13,7 @@ import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
 import { useSocket } from "../hooks/useSocket";
-import { Box, Chip, CircularProgress } from "@mui/material";
+import { Box, Chip, CircularProgress, Tooltip } from "@mui/material";
 
 function convertToDateAndTime(ts: number) {
     var date = new Date(ts * 1000);
@@ -265,19 +265,25 @@ const Machines = () => {
                                                     // TODO: yellow color :(
                                                     align="right"
                                                 >
-                                                    <Chip
-                                                        label={machine.status}
-                                                        variant="outlined"
-                                                        color={
-                                                            machine.status ===
-                                                            "online"
-                                                                ? "success"
-                                                                : machine.status ===
-                                                                  "offline"
-                                                                ? "error"
-                                                                : "info"
-                                                        }
-                                                    />
+                                                    <Tooltip
+                                                        title={`${machine.username} is ${machine.status}`}
+                                                    >
+                                                        <Chip
+                                                            label={
+                                                                machine.status
+                                                            }
+                                                            variant="outlined"
+                                                            color={
+                                                                machine.status ===
+                                                                "online"
+                                                                    ? "success"
+                                                                    : machine.status ===
+                                                                      "offline"
+                                                                    ? "error"
+                                                                    : "info"
+                                                            }
+                                                        />
+                                                    </Tooltip>
                                                 </TableCell>
                                             </TableRow>
                                         )
@@ -345,7 +351,7 @@ const Machines = () => {
                                             {app.applicationName}
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Button>Add to blocked</Button>
+                                            <Button>Block</Button>
                                             <Button
                                                 onClick={() => {
                                                     console.log(
