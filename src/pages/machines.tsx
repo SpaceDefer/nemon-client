@@ -14,6 +14,7 @@ import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
 import { useSocket } from "../hooks/useSocket";
 import { Box, Chip, CircularProgress, Tooltip } from "@mui/material";
+import { addToLog } from "../logger";
 
 function convertToDateAndTime(ts: number) {
     var date = new Date(ts * 1000);
@@ -115,6 +116,7 @@ const Machines = () => {
 
         switch (data.type) {
             case "INF":
+                addToLog(data.type, JSON.stringify(data));
                 const temp = apps;
                 console.log(temp);
                 setApps(
@@ -141,6 +143,7 @@ const Machines = () => {
                 toggleFlip(!flip);
                 break;
             case "ALT":
+                addToLog(data.type, JSON.stringify(data));
                 console.log(data);
                 setAlertConfig({ message: data.message, severity: "error" });
                 switch (data.status) {
@@ -175,6 +178,7 @@ const Machines = () => {
                 setTimeout(() => setOpen(false), 5000);
                 break;
             case "ACK":
+                addToLog(data.type, JSON.stringify(data));
                 console.log(data.message);
                 setAlertConfig({ message: data.message, severity: "success" });
                 setOpen(true);
@@ -366,6 +370,12 @@ const Machines = () => {
                                                             Location:
                                                                 app.location,
                                                         };
+                                                    addToLog(
+                                                        "DEL",
+                                                        JSON.stringify(
+                                                            deleteReq
+                                                        )
+                                                    );
                                                     socket.send(
                                                         JSON.stringify(
                                                             deleteReq

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import Log from "./components/log";
 import Sidebar from "./components/sidebar";
 import Applications from "./pages/applications";
 import Machines from "./pages/machines";
@@ -18,6 +19,7 @@ const App = () => {
                     element={<Navigate to="/applications" replace />}
                 />
             </Routes>
+            <Log />
         </div>
     );
 };
