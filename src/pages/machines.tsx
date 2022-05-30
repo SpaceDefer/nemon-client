@@ -49,8 +49,9 @@ type Alert = "ALT";
 type Acknowledge = "ACK";
 type Info = "INF";
 type Delete = "DEL";
+type Discovery = "DIS";
 
-type Type = Alert | Acknowledge | Info | Delete;
+type Type = Discovery | Alert | Acknowledge | Info | Delete;
 type Status = "offline" | "online" | "reconnecting";
 
 interface DeleteRequest {
@@ -181,6 +182,13 @@ const Machines = () => {
                 addToLog(data.type, JSON.stringify(data));
                 console.log(data.message);
                 setAlertConfig({ message: data.message, severity: "success" });
+                setOpen(true);
+                setTimeout(() => setOpen(false), 5000);
+                break;
+
+            case "DIS":
+                console.log(data.message);
+                setAlertConfig({ message: data.message, severity: "info" });
                 setOpen(true);
                 setTimeout(() => setOpen(false), 5000);
                 break;
