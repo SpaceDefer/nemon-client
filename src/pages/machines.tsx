@@ -91,6 +91,7 @@ const Machines = () => {
     const [apps, setApps] = useState<Map<string, Application[]>>(
         new Map<string, Application[]>()
     );
+    const [refreshing, setRefreshing] = useState<boolean>(true);
     const [appList, setAppList] = useState<Application[]>([]);
     const [machines, setMachines] = useState<Map<string, Machine>>(
         new Map<string, Machine>()
@@ -117,6 +118,7 @@ const Machines = () => {
 
         switch (data.type) {
             case "INF":
+                setRefreshing(false);
                 addToLog(data.type, JSON.stringify(data));
                 const temp = apps;
                 console.log(temp);
@@ -144,6 +146,7 @@ const Machines = () => {
                 toggleFlip(!flip);
                 break;
             case "ALT":
+                setRefreshing(false);
                 addToLog(data.type, JSON.stringify(data));
                 console.log(data);
                 setAlertConfig({ message: data.message, severity: "error" });
@@ -179,6 +182,7 @@ const Machines = () => {
                 setTimeout(() => setOpen(false), 5000);
                 break;
             case "ACK":
+                setRefreshing(false);
                 addToLog(data.type, JSON.stringify(data));
                 console.log(data.message);
                 setAlertConfig({ message: data.message, severity: "success" });
@@ -187,6 +191,7 @@ const Machines = () => {
                 break;
 
             case "DIS":
+                setRefreshing(true);
                 console.log(data.message);
                 setAlertConfig({ message: data.message, severity: "info" });
                 setOpen(true);
@@ -230,7 +235,7 @@ const Machines = () => {
                     </Alert>
                 </Snackbar>
             )}
-            {size ? (
+            {!refreshing ? (
                 <TableContainer component={Paper}>
                     <Table style={{ minWidth: "70vw" }} aria-label="Machines">
                         <TableHead>
@@ -311,12 +316,9 @@ const Machines = () => {
                         style={{
                             position: "absolute",
                             width: "0px",
-                            left: 0,
-                            right: 0,
-                            marginLeft: "auto",
-                            marginTop: "auto",
-                            marginBottom: "auto",
-                            marginRight: "auto",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
                         }}
                     >
                         <CircularProgress />
