@@ -195,6 +195,7 @@ const App = () => {
                             flip={flip}
                             open={open}
                             ips={ips}
+                            machinesWithApplication={machinesWithApplication}
                             apps={apps}
                             appList={appList}
                         />

@@ -20,11 +20,13 @@ import {
     Chip,
     CircularProgress,
     Grid,
+    IconButton,
     List,
     ListItem,
     Tooltip,
 } from "@mui/material";
 import { Application, DeleteRequest } from "../App";
+import { Info, InfoRounded } from "@mui/icons-material";
 
 function convertToDateAndTime(ts: number) {
     var date = new Date(ts * 1000);
@@ -62,8 +64,10 @@ const Machines = (props: any) => {
     const [ignored, setIgnored] = useState<Set<Application>>(
         new Set<Application>()
     );
+    const [getMachine, setGetMachine] = useState<string>("");
     const [workerIp, setWorkerIp] = useState<string>("");
-
+    const [machinesList, setMachinesList] = useState<Machine[]>();
+    const [machineModalOpen, setMachineModalOpen] = useState<boolean>();
     useEffect(() => {
         props.setSize(props.ips.size);
     }, [props.flip]);
@@ -78,6 +82,11 @@ const Machines = (props: any) => {
     const openIgnoredModal = () => {
         console.log(ignored);
         setIgnoredListOpen(true);
+    };
+
+    const openMachineModal = () => {
+        setMachinesList(props.machinesWithApplication[getMachine]);
+        setMachineModalOpen(true);
     };
 
     return (
@@ -102,7 +111,7 @@ const Machines = (props: any) => {
                     </Alert>
                 </Snackbar>
             )}
-            {!props.refreshing ? (
+            {!false ? (
                 <TableContainer component={Paper}>
                     <Table style={{ minWidth: "70vw" }} aria-label="Machines">
                         <TableHead>
@@ -209,6 +218,54 @@ const Machines = (props: any) => {
             </Modal>
 
             <Modal
+                open={machineModalOpen}
+                onClose={() => setMachineModalOpen(false)}
+                closeAfterTransition
+                BackdropComponent={Backdrop}
+            >
+                <TableContainer component={Paper} style={style}>
+                    <Table
+                        stickyHeader
+                        sx={{ minWidth: 750 }}
+                        aria-label="Machines"
+                    >
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Name</TableCell>
+                                <TableCell align="right">IP</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody className="overflow-scroll">
+                            {machinesList &&
+                                machinesList.map(
+                                    (m: Application, id: number) => (
+                                        <TableRow
+                                            key={id}
+                                            sx={{
+                                                "&:last-child td, &:last-child th":
+                                                    {
+                                                        border: 0,
+                                                    },
+                                            }}
+                                        >
+                                            <TableCell
+                                                component="th"
+                                                scope="row"
+                                            >
+                                                {m.username}
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                {m.ip}
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Modal>
+
+            <Modal
                 aria-labelledby="transition-modal-title"
                 aria-describedby="transition-modal-description"
                 open={appListOpen}
@@ -252,6 +309,16 @@ const Machines = (props: any) => {
                                                 {app.applicationName}
                                             </TableCell>
                                             <TableCell align="right">
+                                                <IconButton
+                                                    onClick={() => {
+                                                        setGetMachine(
+                                                            app.applicationName
+                                                        );
+                                                        openMachineModal();
+                                                    }}
+                                                >
+                                                    <InfoRounded />
+                                                </IconButton>
                                                 <Button
                                                     onClick={() => {
                                                         setIgnored(
