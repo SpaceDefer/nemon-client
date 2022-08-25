@@ -13,6 +13,8 @@ import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
 import { useSocket } from "../hooks/useSocket";
+import { addToLog } from "../logger";
+
 import {
     Box,
     Chip,
@@ -22,9 +24,8 @@ import {
     ListItem,
     Tooltip,
 } from "@mui/material";
-import { addToLog } from "../logger";
-import { useRecoilState } from "recoil";
 import { machineState } from "../atoms";
+import { Application, DeleteRequest } from "../App";
 
 function convertToDateAndTime(ts: number) {
     var date = new Date(ts * 1000);
@@ -55,182 +56,29 @@ const style = {
     overflowX: "initial",
 };
 
-type Alert = "ALT";
-type Acknowledge = "ACK";
-type Info = "INF";
-type Delete = "DEL";
-type Discovery = "DIS";
-
-type Type = Discovery | Alert | Acknowledge | Info | Delete;
-type Status = "offline" | "online" | "reconnecting";
-
-interface DeleteRequest {
-    Type: Type;
-    ApplicationName: string;
-    WorkerIp: string;
-    Location: string;
-}
-
-interface Application {
-    applicationName: string;
-    location: string;
-}
-
-interface Machine {
-    ip: string;
-    username: string;
-    hostname: string;
-    os: string;
-    status: Status;
-}
-
-interface MachineApplicationsMap {
-    [key: string]: Application[];
-}
-
-interface IpToMachineMap {
-    [key: string]: Machine;
-}
-
-interface AlertConfig {
-    severity: AlertColor;
-    message: string;
-}
-
-const Machines = () => {
+const Machines = (props: any) => {
     const [apps, setApps] = useState<Map<string, Application[]>>(
         new Map<string, Application[]>()
     );
     const [ignoredListOpen, setIgnoredListOpen] = useState<boolean>(false);
-    const [refreshing, setRefreshing] = useState<boolean>(true);
-    const [appList, setAppList] = useState<Application[]>([]);
-    const [machines, setMachines] = useState<Map<string, Machine>>(
-        new Map<string, Machine>()
-    );
-    const [flip, toggleFlip] = useState<boolean>(false);
-    const [size, setSize] = useState<number>(0);
-    const [alertConfig, setAlertConfig] = useState<AlertConfig>({
-        message: "",
-        severity: "error",
-    });
-    const [ips, setIps] = useState<Set<string>>(new Set<string>());
+
     const [appListOpen, setAppListOpen] = useState(false);
     const [ignored, setIgnored] = useState<Set<Application>>(
         new Set<Application>()
     );
-    const [open, setOpen] = useState<boolean>(false);
     const [workerIp, setWorkerIp] = useState<string>("");
-    const [_machines, _setMachines] = useRecoilState(machineState);
-
-    const socket = useSocket();
 
     useEffect(() => {
-        setSize(ips.size);
-    }, [flip]);
-
-    const onMessage = useCallback((message) => {
-        const data = JSON.parse(message?.data);
-        console.log(data);
-
-        switch (data.type) {
-            case "INF":
-                setRefreshing(false);
-                addToLog(data.type, JSON.stringify(data));
-                const temp = apps;
-                console.log(temp);
-                setApps(
-                    new Map<string, Application[]>(
-                        apps.set(data.workerIp, data.applicationList)
-                    )
-                );
-
-                var newMachine: Machine = {
-                    ip: data.workerIp,
-                    username: data.username,
-                    hostname: data.hostname,
-                    os: data.os,
-                    status: "online",
-                };
-                if (!ips.has(data.workerIp)) {
-                    setIps(new Set<string>(ips.add(data.workerIp)));
-                }
-                setMachines(
-                    new Map<string, Machine>(
-                        machines.set(data.workerIp, newMachine)
-                    )
-                );
-                toggleFlip(!flip);
-                break;
-            case "ALT":
-                setRefreshing(false);
-                addToLog(data.type, JSON.stringify(data));
-                console.log(data);
-                setAlertConfig({ message: data.message, severity: "error" });
-                switch (data.status) {
-                    case "online":
-                        setAlertConfig({
-                            message: `${data.workerIp} is online!`,
-                            severity: "success",
-                        });
-                        break;
-                    case "offline":
-                        setAlertConfig({
-                            message: `${data.workerIp} is offline!`,
-                            severity: "error",
-                        });
-                        break;
-                    case "reconnecting":
-                        setAlertConfig({
-                            message: `trying to reconnect to ${data.workerIp}!`,
-                            severity: "warning",
-                        });
-                        break;
-                }
-                setOpen(true);
-                var offlineMachine = machines.get(data.workerIp);
-                console.log(offlineMachine);
-                offlineMachine.status = data.status;
-                setMachines(
-                    new Map<string, Machine>(
-                        machines.set(data.workerIp, offlineMachine)
-                    )
-                );
-                setTimeout(() => setOpen(false), 5000);
-                break;
-            case "ACK":
-                setRefreshing(false);
-                addToLog(data.type, JSON.stringify(data));
-                console.log(data.message);
-                setAlertConfig({ message: data.message, severity: "success" });
-                setOpen(true);
-                setTimeout(() => setOpen(false), 5000);
-                break;
-
-            case "DIS":
-                setRefreshing(true);
-                console.log(data.message);
-                setAlertConfig({ message: data.message, severity: "info" });
-                setOpen(true);
-                setTimeout(() => setOpen(false), 5000);
-                break;
-        }
-    }, []);
-
-    useEffect(() => {
-        socket.addEventListener("message", onMessage);
-
-        return () => {
-            socket.removeEventListener("message", onMessage);
-        };
-    });
+        props.setSize(props.ips.size);
+    }, [props.flip]);
 
     const handleRowClick = (id: string) => {
         console.log(apps);
-        setAppList(apps?.get(id));
+        props.setAppList(apps?.get(id));
         setWorkerIp(id);
         setAppListOpen(true);
     };
-
+    const socket = useSocket();
     const openIgnoredModal = () => {
         console.log(ignored);
         setIgnoredListOpen(true);
@@ -251,14 +99,14 @@ const Machines = () => {
                 <Button onClick={openIgnoredModal}>Ignored</Button>
                 <div className="flex-grow" />
             </div>
-            {alertConfig && (
-                <Snackbar open={open} autoHideDuration={6000}>
-                    <Alert severity={alertConfig.severity || "warning"}>
-                        {alertConfig.message}
+            {props.alertConfig && (
+                <Snackbar open={props.open} autoHideDuration={6000}>
+                    <Alert severity={props.alertConfig.severity || "warning"}>
+                        {props.alertConfig.message}
                     </Alert>
                 </Snackbar>
             )}
-            {!refreshing ? (
+            {!props.refreshing ? (
                 <TableContainer component={Paper}>
                     <Table style={{ minWidth: "70vw" }} aria-label="Machines">
                         <TableHead>
@@ -272,9 +120,9 @@ const Machines = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {[...machines.keys()].map(
+                            {[...props.machines.keys()].map(
                                 (ip: string, id: number) => {
-                                    let machine = machines.get(ip);
+                                    let machine = props.machines.get(ip);
                                     return (
                                         machine && (
                                             <TableRow
@@ -389,64 +237,70 @@ const Machines = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody className="overflow-scroll">
-                            {appList &&
-                                appList.map((app: Application, id: number) => (
-                                    <TableRow
-                                        key={id}
-                                        sx={{
-                                            "&:last-child td, &:last-child th":
-                                                {
-                                                    border: 0,
-                                                },
-                                        }}
-                                    >
-                                        <TableCell component="th" scope="row">
-                                            {app.applicationName}
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <Button
-                                                onClick={() => {
-                                                    setIgnored(
-                                                        ignored.add(app)
-                                                    );
-                                                    console.log(ignored);
-                                                }}
+                            {props.appList &&
+                                props.appList.map(
+                                    (app: Application, id: number) => (
+                                        <TableRow
+                                            key={id}
+                                            sx={{
+                                                "&:last-child td, &:last-child th":
+                                                    {
+                                                        border: 0,
+                                                    },
+                                            }}
+                                        >
+                                            <TableCell
+                                                component="th"
+                                                scope="row"
                                             >
-                                                Ignore
-                                            </Button>
-                                            <Button
-                                                onClick={() => {
-                                                    console.log(
-                                                        app.applicationName
-                                                    );
-                                                    let deleteReq: DeleteRequest =
-                                                        {
-                                                            Type: "DEL",
-                                                            ApplicationName:
-                                                                app.applicationName,
-                                                            WorkerIp: workerIp,
-                                                            Location:
-                                                                app.location,
-                                                        };
-                                                    addToLog(
-                                                        "DEL",
-                                                        JSON.stringify(
-                                                            deleteReq
-                                                        )
-                                                    );
-                                                    socket.send(
-                                                        JSON.stringify(
-                                                            deleteReq
-                                                        )
-                                                    );
-                                                }}
-                                                color="error"
-                                            >
-                                                Remove
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                                {app.applicationName}
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <Button
+                                                    onClick={() => {
+                                                        setIgnored(
+                                                            ignored.add(app)
+                                                        );
+                                                        console.log(ignored);
+                                                    }}
+                                                >
+                                                    Ignore
+                                                </Button>
+                                                <Button
+                                                    onClick={() => {
+                                                        console.log(
+                                                            app.applicationName
+                                                        );
+                                                        let deleteReq: DeleteRequest =
+                                                            {
+                                                                Type: "DEL",
+                                                                ApplicationName:
+                                                                    app.applicationName,
+                                                                WorkerIp:
+                                                                    workerIp,
+                                                                Location:
+                                                                    app.location,
+                                                            };
+                                                        addToLog(
+                                                            "DEL",
+                                                            JSON.stringify(
+                                                                deleteReq
+                                                            )
+                                                        );
+                                                        socket.send(
+                                                            JSON.stringify(
+                                                                deleteReq
+                                                            )
+                                                        );
+                                                    }}
+                                                    color="error"
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                )}
                         </TableBody>
                     </Table>
                 </TableContainer>
