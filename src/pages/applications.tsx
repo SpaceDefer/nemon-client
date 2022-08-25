@@ -10,7 +10,6 @@ import {
     GridRowParams,
 } from "@mui/x-data-grid";
 import SearchSolid from "../assets/search-solid.svg";
-import allowedList from "../allowedApplications.json";
 import blackList from "../constants/blackListedApps.json";
 import whiteList from "../constants/whiteListedApps.json";
 import { ClassNames } from "@emotion/react";
@@ -127,7 +126,6 @@ const Applications = () => {
     const styles = useStyles();
     useEffect(() => {
         console.log(blackList.length);
-        setApps(allowedList);
         setBlackListedApps(blackList);
         setWhiteListedApps(whiteList);
     }, []);
@@ -154,7 +152,7 @@ const Applications = () => {
     function handleClickWhite(e: any) {
         e.preventDefault();
         let _id = 0;
-        let _name = inputRefBlack.current.value;
+        let _name = inputRefWhite.current.value;
         if (_name === undefined) return;
         _name = _name.replace(/ /g, "");
         if (_name === "") return;
