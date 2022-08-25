@@ -9,7 +9,6 @@ import {
     GridRowParams,
 } from "@mui/x-data-grid";
 import SearchSolid from "../assets/search-solid.svg";
-import allowedList from "../allowedApplications.json";
 
 type App = {
     id: string;
@@ -68,10 +67,6 @@ const useStyles = makeStyles({
 const Applications = () => {
     const [apps, setApps] = useState<App[]>();
     const styles = useStyles();
-    useEffect(() => {
-        console.log(allowedList);
-        setApps(allowedList);
-    }, []);
     const handleRowClick = (inp: GridRowParams<any>) => {
         console.log(inp.row);
     };

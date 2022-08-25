@@ -24,7 +24,6 @@ import {
     ListItem,
     Tooltip,
 } from "@mui/material";
-import { machineState } from "../atoms";
 import { Application, DeleteRequest } from "../App";
 
 function convertToDateAndTime(ts: number) {
@@ -57,9 +56,6 @@ const style = {
 };
 
 const Machines = (props: any) => {
-    const [apps, setApps] = useState<Map<string, Application[]>>(
-        new Map<string, Application[]>()
-    );
     const [ignoredListOpen, setIgnoredListOpen] = useState<boolean>(false);
 
     const [appListOpen, setAppListOpen] = useState(false);
@@ -73,8 +69,8 @@ const Machines = (props: any) => {
     }, [props.flip]);
 
     const handleRowClick = (id: string) => {
-        console.log(apps);
-        props.setAppList(apps?.get(id));
+        console.log(props.apps);
+        props.setAppList(props.apps?.get(id));
         setWorkerIp(id);
         setAppListOpen(true);
     };

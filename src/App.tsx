@@ -4,7 +4,6 @@ import Log from "./components/log";
 import Sidebar from "./components/sidebar";
 import Applications from "./pages/applications";
 import Machines from "./pages/machines";
-import allowedApplications from "./allowedApplications.json";
 import { useSocket } from "./hooks/useSocket";
 import { addToLog } from "./logger";
 
@@ -51,18 +50,27 @@ export interface Machine {
 }
 const App = () => {
     const client = new WebSocket("ws://127.0.0.1:4000");
+    const [apps, setApps] = useState<Map<string, Application[]>>(
+        new Map<string, Application[]>()
+    );
     const [open, setOpen] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(true);
     const [appList, setAppList] = useState<Application[]>([]);
     const [machines, setMachines] = useState<Map<string, Machine>>(
         new Map<string, Machine>()
     );
+    const [machinesWithApplication, setMachinesWithApplication] = useState<{
+        [key: string]: Machine[];
+    }>();
     const [flip, toggleFlip] = useState<boolean>(false);
     const [size, setSize] = useState<number>(0);
     const [alertConfig, setAlertConfig] = useState<AlertConfig>({
         message: "",
         severity: "error",
     });
+    useEffect(() => {
+        console.log(machinesWithApplication);
+    }, [machinesWithApplication]);
     const [ips, setIps] = useState<Set<string>>(new Set<string>());
     const onMessage = useCallback((message) => {
         const data = JSON.parse(message?.data);
@@ -73,7 +81,7 @@ const App = () => {
                 setRefreshing(false);
                 addToLog(data.type, JSON.stringify(data));
                 const temp = apps;
-                console.log(temp);
+                var map: { [key: string]: Machine[] } = {};
                 setApps(
                     new Map<string, Application[]>(
                         apps.set(data.workerIp, data.applicationList)
@@ -87,6 +95,13 @@ const App = () => {
                     os: data.os,
                     status: "online",
                 };
+                data.applicationList.forEach((app: any, idx: any) => {
+                    if (map[app.applicationName] === undefined)
+                        map[app.applicationName] = [];
+                    map[app.applicationName]?.push(newMachine);
+                });
+
+                setMachinesWithApplication(map);
                 if (!ips.has(data.workerIp)) {
                     setIps(new Set<string>(ips.add(data.workerIp)));
                 }
@@ -125,9 +140,12 @@ const App = () => {
                 setOpen(true);
                 var offlineMachine = machines.get(data.workerIp);
                 console.log(offlineMachine);
+
+                // @ts-ignore
                 offlineMachine.status = data.status;
                 setMachines(
                     new Map<string, Machine>(
+                        // @ts-ignore
                         machines.set(data.workerIp, offlineMachine)
                     )
                 );
@@ -158,7 +176,8 @@ const App = () => {
         return () => {
             socket.removeEventListener("message", onMessage);
         };
-    });
+    }, []);
+
     const socket = useSocket();
     return (
         <div className="flex w-screen overflow-hidden">
@@ -176,6 +195,8 @@ const App = () => {
                             flip={flip}
                             open={open}
                             ips={ips}
+                            apps={apps}
+                            appList={appList}
                         />
                     }
                 />
