@@ -6,14 +6,21 @@ import { BrowserRouter } from "react-router-dom";
 import { SocketProvider } from "./hooks/SocketProvider";
 import { Provider } from "react-redux";
 // import store from "./app/store";
+import {
+    RecoilRoot,
+    // atom,
+    // selector,
+    // useRecoilState,
+    // useRecoilValue,
+} from "recoil";
 
 ReactDOM.render(
     <SocketProvider>
         <React.StrictMode>
             <BrowserRouter>
-                {/* <Provider store={store}> */}
-                <App />
-                {/* </Provider> */}
+                <RecoilRoot>
+                    <App />
+                </RecoilRoot>
             </BrowserRouter>
         </React.StrictMode>
     </SocketProvider>,

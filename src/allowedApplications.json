@@ -1,0 +1,18 @@
+[
+    {
+        "id": "1",
+        "name": "Dropbox",
+        "installationDate": 1649521342,
+        "priority": "high",
+        "version": "11.11.1",
+        "type": "office"
+    },
+    {
+        "id": "2",
+        "name": "Numbers",
+        "installationDate": 1649521342,
+        "priority": "high",
+        "version": "11.11.1",
+        "type": "office"
+    }
+]

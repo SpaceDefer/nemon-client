@@ -13,8 +13,18 @@ import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
 import { useSocket } from "../hooks/useSocket";
-import { Box, Chip, CircularProgress, Tooltip } from "@mui/material";
+import {
+    Box,
+    Chip,
+    CircularProgress,
+    Grid,
+    List,
+    ListItem,
+    Tooltip,
+} from "@mui/material";
 import { addToLog } from "../logger";
+import { useRecoilState } from "recoil";
+import { machineState } from "../atoms";
 
 function convertToDateAndTime(ts: number) {
     var date = new Date(ts * 1000);
@@ -91,6 +101,7 @@ const Machines = () => {
     const [apps, setApps] = useState<Map<string, Application[]>>(
         new Map<string, Application[]>()
     );
+    const [ignoredListOpen, setIgnoredListOpen] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(true);
     const [appList, setAppList] = useState<Application[]>([]);
     const [machines, setMachines] = useState<Map<string, Machine>>(
@@ -104,8 +115,13 @@ const Machines = () => {
     });
     const [ips, setIps] = useState<Set<string>>(new Set<string>());
     const [appListOpen, setAppListOpen] = useState(false);
+    const [ignored, setIgnored] = useState<Set<Application>>(
+        new Set<Application>()
+    );
     const [open, setOpen] = useState<boolean>(false);
     const [workerIp, setWorkerIp] = useState<string>("");
+    const [_machines, _setMachines] = useRecoilState(machineState);
+
     const socket = useSocket();
 
     useEffect(() => {
@@ -214,6 +230,12 @@ const Machines = () => {
         setWorkerIp(id);
         setAppListOpen(true);
     };
+
+    const openIgnoredModal = () => {
+        console.log(ignored);
+        setIgnoredListOpen(true);
+    };
+
     return (
         <div className="p-12">
             <p className="font-bold text-2xl">Network Computers</p>
@@ -226,6 +248,7 @@ const Machines = () => {
                         className="bg-transperant appearance-none outline-none"
                     />
                 </div>
+                <Button onClick={openIgnoredModal}>Ignored</Button>
                 <div className="flex-grow" />
             </div>
             {alertConfig && (
@@ -325,6 +348,22 @@ const Machines = () => {
                     </Box>
                 </Box>
             )}
+
+            <Modal
+                aria-labelledby="transition-modal-title"
+                aria-describedby="transition-modal-description"
+                open={ignoredListOpen}
+                onClose={() => setIgnoredListOpen(false)}
+                closeAfterTransition
+                BackdropComponent={Backdrop}
+                BackdropProps={{
+                    timeout: 500,
+                }}
+                style={{ overflowX: "auto" }}
+            >
+                <List sx={{ minWidth: 750 }}></List>
+            </Modal>
+
             <Modal
                 aria-labelledby="transition-modal-title"
                 aria-describedby="transition-modal-description"
@@ -365,7 +404,16 @@ const Machines = () => {
                                             {app.applicationName}
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Button>Block</Button>
+                                            <Button
+                                                onClick={() => {
+                                                    setIgnored(
+                                                        ignored.add(app)
+                                                    );
+                                                    console.log(ignored);
+                                                }}
+                                            >
+                                                Ignore
+                                            </Button>
                                             <Button
                                                 onClick={() => {
                                                     console.log(

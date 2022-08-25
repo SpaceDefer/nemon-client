@@ -4,6 +4,7 @@ import Log from "./components/log";
 import Sidebar from "./components/sidebar";
 import Applications from "./pages/applications";
 import Machines from "./pages/machines";
+import allowedApplications from "./allowedApplications.json";
 
 const App = () => {
     const client = new WebSocket("ws://127.0.0.1:4000");
