@@ -7,6 +7,10 @@ import Machines from "./pages/machines";
 import { useSocket } from "./hooks/useSocket";
 import { addToLog } from "./logger";
 
+import blackApps from "./constants/blackListedApps.json";
+import { createNextState } from "@reduxjs/toolkit";
+import { LensTwoTone } from "@mui/icons-material";
+
 type Type = Discovery | Alert | Acknowledge | Info | Delete;
 
 type Alert = "ALT";
@@ -48,6 +52,13 @@ export interface Machine {
     os: string;
     status: Status;
 }
+
+export interface BlackListedApp {
+    id: string;
+    ip: string;
+    applicationName: string;
+}
+
 const App = () => {
     const client = new WebSocket("ws://127.0.0.1:4000");
     const [apps, setApps] = useState<Map<string, Application[]>>(
@@ -68,9 +79,32 @@ const App = () => {
         message: "",
         severity: "error",
     });
-    useEffect(() => {
-        console.log(machinesWithApplication);
-    }, [machinesWithApplication]);
+    const [blackListedApps, setBlackListedApps] = useState<BlackListedApp[]>();
+
+    function filterApplications() {
+        console.log(blackApps);
+        console.log(machines);
+        console.log(apps);
+        let _id = 0;
+        let filteredApps: BlackListedApp[] = [];
+        for (const [key, value] of apps) {
+            for (const app of value) {
+                for (const blackApp of blackApps) {
+                    if (app.applicationName == blackApp.name) {
+                        const data: BlackListedApp = {
+                            id: `${_id++}`,
+                            ip: key,
+                            applicationName: app.applicationName,
+                        };
+                        filteredApps.push(data);
+                    }
+                }
+            }
+        }
+        setBlackListedApps(filteredApps);
+        console.log(filteredApps);
+    }
+
     const [ips, setIps] = useState<Set<string>>(new Set<string>());
     const onMessage = useCallback((message) => {
         const data = JSON.parse(message?.data);
@@ -177,6 +211,10 @@ const App = () => {
             socket.removeEventListener("message", onMessage);
         };
     }, []);
+    useEffect(() => {
+        console.log(machinesWithApplication);
+        filterApplications();
+    }, [machinesWithApplication]);
 
     const socket = useSocket();
     return (
@@ -201,7 +239,10 @@ const App = () => {
                         />
                     }
                 />
-                <Route path="/applications" element={<Applications />} />
+                <Route
+                    path="/applications"
+                    element={<Applications blApps={blackListedApps} />}
+                />
                 <Route
                     path="/"
                     element={<Navigate to="/applications" replace />}

@@ -56,16 +56,8 @@ function convertToDateAndTime(ts: number) {
 }
 
 const columns: GridColDef[] = [
-    { field: "name", headerName: "Name", width: 400 },
-    {
-        field: "installationDate",
-        headerName: "Installation Date",
-        width: 300,
-        valueGetter: (params: GridValueGetterParams) =>
-            `${convertToDateAndTime(params.row.installationDate)}`,
-    },
-    { field: "priority", headerName: "Priority", width: 200 },
-    { field: "version", headerName: "Version", width: 200, sortable: false },
+    { field: "name", headerName: "Name", width: 200 },
+    { field: "key", headerName: "IP", width: 200 },
 ];
 
 const blackAppsColumns: GridColDef[] = [
@@ -112,7 +104,7 @@ const useStyles = makeStyles({
     },
 });
 
-const Applications = () => {
+const Applications = (props: any) => {
     const [apps, setApps] = useState<App[]>();
     const [blackListedApps, setBlackListedApps] = useState();
     const [whiteListedApps, setWhiteListedApps] = useState();
@@ -120,7 +112,9 @@ const Applications = () => {
     const [openBlack, setOpenBlack] = useState(false);
     const [openWhite, setOpenWhite] = useState(false);
 
-    const [blackAppName, setBlackAppName] = useState("");
+    const [showBlack, setShowBlack] = useState();
+    const [showWhite, setShowWhite] = useState();
+
     const inputRefBlack = useRef(null);
     const inputRefWhite = useRef(null);
     const styles = useStyles();
@@ -128,8 +122,12 @@ const Applications = () => {
         console.log(blackList.length);
         setBlackListedApps(blackList);
         setWhiteListedApps(whiteList);
-    }, []);
+
+        setShowBlack([{ id: "1", name: "Discord", key: "192.168.426.41" }]);
+        console.log("showBlack Array", props.blApps);
+    }, [props]);
     const handleRowClick = (inp: GridRowParams<any>) => {
+        console.log("showBlack Array", props.blApps);
         console.log(inp.row);
     };
     /* @ts-ignore */
@@ -172,21 +170,29 @@ const Applications = () => {
                 className={styles.blist}
             >
                 <div className={styles.modalItems}>
-                    <div>Black List an App</div>
-                    <input
-                        ref={inputRefBlack}
-                        type="text"
-                        id="message"
-                        name="message"
-                        autoComplete="off"
-                    />
-                    <div className="styles.addAppBlack">
-                        <Button
-                            variant="contained"
-                            onClick={(e) => handleClickBlack(e)}
-                        >
-                            Add
-                        </Button>
+                    <div className="text-3xl mt-10 uppercase">
+                        BlackList an App
+                    </div>
+                    <div className="flex flex-row mt-4">
+                        <input
+                            style={{
+                                border: "1px solid blue",
+                                marginRight: "5px",
+                            }}
+                            ref={inputRefBlack}
+                            type="text"
+                            id="message"
+                            name="message"
+                            autoComplete="off"
+                        />
+                        <div className="styles.addAppBlack">
+                            <Button
+                                variant="contained"
+                                onClick={(e) => handleClickBlack(e)}
+                            >
+                                Add
+                            </Button>
+                        </div>
                     </div>
                     <div style={{ fontSize: "20px", marginTop: "18px" }}>
                         BLACKLISTED APPLICATIONS
@@ -216,21 +222,29 @@ const Applications = () => {
                 className={styles.blist}
             >
                 <div className={styles.modalItems}>
-                    <div>Add app to whitelist</div>
-                    <input
-                        ref={inputRefWhite}
-                        type="text"
-                        id="message"
-                        name="message"
-                        autoComplete="off"
-                    />
-                    <div className="styles.addAppBlack">
-                        <Button
-                            variant="contained"
-                            onClick={(e) => handleClickWhite(e)}
-                        >
-                            Add app
-                        </Button>
+                    <div className="text-3xl mt-10 uppercase">
+                        BlackList an App
+                    </div>
+                    <div className="flex flex-row mt-4">
+                        <input
+                            style={{
+                                border: "1px solid blue",
+                                marginRight: "5px",
+                            }}
+                            ref={inputRefBlack}
+                            type="text"
+                            id="message"
+                            name="message"
+                            autoComplete="off"
+                        />
+                        <div className="styles.addAppBlack">
+                            <Button
+                                variant="contained"
+                                onClick={(e) => handleClickBlack(e)}
+                            >
+                                Add
+                            </Button>
+                        </div>
                     </div>
                     <div style={{ fontSize: "20px", marginTop: "18px" }}>
                         WHITELISTED APPLICATIONS
@@ -275,7 +289,9 @@ const Applications = () => {
                     }}
                 >
                     <Box className={styles.addBlackList}>
-                        <Typography> </Typography>
+                        <p className="text-2xl mt-0 text-white mt-14">
+                            Add Blacklist Apps
+                        </p>
                     </Box>
                 </Button>
                 <Button
@@ -284,7 +300,9 @@ const Applications = () => {
                     }}
                 >
                     <Box className={styles.addWhiteList}>
-                        <Typography> </Typography>
+                        <p className="text-2xl mt-0 text-white mt-14">
+                            Add Whitelist Apps
+                        </p>
                     </Box>
                 </Button>
             </div>
@@ -292,31 +310,47 @@ const Applications = () => {
                 <BlackListAppsModal />
                 <WhiteListAppsModal />
             </div>
-            <p className="font-bold text-2xl mt-0">Allowed Applications</p>
-            <div className="flex w-[1150px] mt-2 items-center ">
-                <div className="flex bg-white items-center p-2 shadow-sm rounded-lg w-[500px] border-2 ">
-                    <img src={SearchSolid} className="h-[20px] mr-4 ml-2" />
-                    <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transperant appearance-none outline-none"
-                    />
+            <div className="flex flex-row w-100 items-center justify-around w-[900px]">
+                <div className="flex flex-col w-[400px]">
+                    <p className="font-bold text-2xl mt-0">
+                        BlackListed Applications
+                    </p>
+                    <div className="h-[450px]">
+                        <DataGrid
+                            style={{
+                                height: "100%",
+                                width: "100%",
+                                backgroundColor: "white",
+                                marginTop: 10,
+                            }}
+                            rows={showBlack ? showBlack : []}
+                            columns={columns}
+                            pageSize={5}
+                            rowsPerPageOptions={[5]}
+                            onRowClick={handleRowClick}
+                        />
+                    </div>
                 </div>
-                <div className="flex-grow" />
+                <div className="flex flex-col w-[400px]">
+                    <p className="font-bold text-2xl mt-0">
+                        WhiteListed Applications
+                    </p>
+                    <div className="h-[450px]">
+                        <DataGrid
+                            style={{
+                                width: "100%",
+                                backgroundColor: "white",
+                                marginTop: 10,
+                            }}
+                            rows={showWhite ? showWhite : []}
+                            columns={columns}
+                            pageSize={5}
+                            rowsPerPageOptions={[5]}
+                            onRowClick={handleRowClick}
+                        />
+                    </div>
+                </div>
             </div>
-            <DataGrid
-                style={{
-                    height: 400,
-                    width: "100%",
-                    backgroundColor: "white",
-                    marginTop: 10,
-                }}
-                rows={apps ? apps : []}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                onRowClick={handleRowClick}
-            />
         </div>
     );
 };
