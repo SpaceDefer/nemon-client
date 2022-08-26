@@ -237,29 +237,29 @@ const Machines = (props: any) => {
                         </TableHead>
                         <TableBody className="overflow-scroll">
                             {machinesList &&
-                                machinesList.map(
-                                    (m: Application, id: number) => (
-                                        <TableRow
-                                            key={id}
-                                            sx={{
-                                                "&:last-child td, &:last-child th":
-                                                    {
-                                                        border: 0,
-                                                    },
-                                            }}
-                                        >
-                                            <TableCell
-                                                component="th"
-                                                scope="row"
-                                            >
-                                                {m.username}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {m.ip}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                )}
+                                machinesList.map((m: any, id: number) => (
+                                    <TableRow
+                                        key={id}
+                                        sx={{
+                                            "&:last-child td, &:last-child th":
+                                                {
+                                                    border: 0,
+                                                },
+                                        }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {m.username == null ||
+                                            m.username == undefined ||
+                                            m.username == " " ||
+                                            m.username == ""
+                                                ? "User"
+                                                : m.username}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            {m.ip}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
                         </TableBody>
                     </Table>
                 </TableContainer>

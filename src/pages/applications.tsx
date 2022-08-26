@@ -56,8 +56,8 @@ function convertToDateAndTime(ts: number) {
 }
 
 const columns: GridColDef[] = [
-    { field: "name", headerName: "Name", width: 200 },
-    { field: "key", headerName: "IP", width: 200 },
+    { field: "applicationName", headerName: "Name", width: 200 },
+    { field: "ip", headerName: "IP", width: 200 },
 ];
 
 const blackAppsColumns: GridColDef[] = [
@@ -124,8 +124,7 @@ const Applications = (props: any) => {
         setWhiteListedApps(whiteList);
 
         setShowBlack([{ id: "1", name: "Discord", key: "192.168.426.41" }]);
-        console.log("showBlack Array", props.blApps);
-    }, [props]);
+    }, []);
     const handleRowClick = (inp: GridRowParams<any>) => {
         console.log("showBlack Array", props.blApps);
         console.log(inp.row);
@@ -240,7 +239,7 @@ const Applications = (props: any) => {
                         <div className="styles.addAppBlack">
                             <Button
                                 variant="contained"
-                                onClick={(e) => handleClickBlack(e)}
+                                onClick={(e) => handleClickWhite(e)}
                             >
                                 Add
                             </Button>
@@ -323,7 +322,7 @@ const Applications = (props: any) => {
                                 backgroundColor: "white",
                                 marginTop: 10,
                             }}
-                            rows={showBlack ? showBlack : []}
+                            rows={props.blApps ? props.blApps : []}
                             columns={columns}
                             pageSize={5}
                             rowsPerPageOptions={[5]}

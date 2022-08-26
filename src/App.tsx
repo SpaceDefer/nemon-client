@@ -8,6 +8,7 @@ import { useSocket } from "./hooks/useSocket";
 import { addToLog } from "./logger";
 
 import blackApps from "./constants/blackListedApps.json";
+import whiteApps from "./constants/whiteListedApps.json";
 import { createNextState } from "@reduxjs/toolkit";
 import { LensTwoTone } from "@mui/icons-material";
 
